@@ -3,51 +3,124 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fædrelandsvennen</title>
+    <title>Eiendomsdata</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Roboto', sans-serif;
+            background-color: #2a2a2a; 
+            color: #ffffff;
+            margin: 0;
+            padding: 0;
+            transition: background-color 0.3s ease;
+        }
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
             padding: 20px;
+            background-color: #1c1c1c; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            border-radius: 8px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
-        #data-container {
-            margin-top: 20px;
+        .container:hover {
+            transform: scale(1.01); 
+            box-shadow: 0 5px 10px rgba(0,0,0,0.3);
         }
-        .data-item {
-            margin-bottom: 10px;
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            position: relative;
+            padding-bottom: 10px;
         }
-        select {
-            padding: 5px;
+        .header h2 {
+            font-size: 24px;
+            color: #ffffff;
+            margin: 0;
+            position: relative;
+            display: inline-block;
+        }
+        .data-select {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            transition: opacity 0.3s ease;
+        }
+        .data-select label {
+            font-size: 18px;
+            margin-right: 10px;
+            color: #ffffff; 
+        }
+        .data-select select {
             font-size: 16px;
+            padding: 5px;
+            border: 1px solid #444;
+            border-radius: 4px;
+            background-color: #333;
+            color: #ffffff;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+        .data-select select:hover,
+        .data-select select:focus {
+            background-color: #444; 
+            border-color: #0071d5; 
+        }
+        .data-display {
+            margin-top: 20px;
+            overflow-x: auto;
+            opacity: 0; 
+            transition: opacity 0.5s ease; 
+        }
+        .data-display.visible {
+            opacity: 1; 
         }
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
         }
         th, td {
-            padding: 10px;
-            border: 1px solid #ddd;
+            padding: 12px;
             text-align: left;
+            border-bottom: 1px solid #444;
+            transition: background-color 0.2s ease; 
+        }
+        th {
+            background-color: #0071d5; 
+            color: #ffffff; 
+        }
+        td {
+            background-color: #1c1c1c; 
+            color: #ffffff; 
+        }
+        tr:hover {
+            background-color: #333; 
         }
     </style>
 </head>
 <body>
-    <h1>Eiendomsplassering</h1>
-    <label for="city-select">Plassering:</label>
-    <select id="city-select">
-        <option value="Oslo">Oslo</option>
-        <option value="Bergen">Bergen</option>
-        <option value="Trondheim">Trondheim</option>
-        <option value="Stavanger m/omegn">Stavanger m/omegn</option>
-        <option value="Kristiansand m/omegn">Kristiansand m/omegn</option>
-        <option value="Tromsø">Tromsø</option>
-        <option value="Norge">Norge</option>
-    </select>
-
-    <div id="data-container"></div>
+    <div class="container">
+        <div class="header">
+            <h2>Eiendomsdata</h2>
+        </div>
+        <div class="data-select">
+            <label for="city">Velg plassering:</label>
+            <select id="city" onchange="updateData()">
+                <option value="Oslo">Oslo</option>
+                <option value="Bergen">Bergen</option>
+                <option value="Trondheim">Trondheim</option>
+                <option value="Stavanger m/omegn">Stavanger m/omegn</option>
+                <option value="Kristiansand m/omegn">Kristiansand m/omegn</option>
+                <option value="Tromsø">Tromsø</option>
+                <option value="Norge">Norge</option>
+            </select>
+        </div>
+        <div class="data-display" id="data-display">
+            <!-- Data will be displayed here -->
+        </div>
+    </div>
 
     <script>
-        const dataSet = {
+        const data = {
             "Oslo": {"Endring siste måned":-0.2,"Endring sesongjustert siste måned":0.3,"Endring hittil i år":"6,7 %","Endring siste år":3.2,"Endring siste 5 år":28.2,"Endring siste 10 år":88.0,"Gjennomsnitt kvm. pris":"96 463","Gjennomsnittspris":"6 937 203"},
             "Bergen": {"Endring siste måned":-0.7,"Endring sesongjustert siste måned":0.3,"Endring hittil i år":"10,2 %","Endring siste år":4.7,"Endring siste 5 år":26.0,"Endring siste 10 år":44.7,"Gjennomsnitt kvm. pris":"55 347","Gjennomsnittspris":"4 498 064"},
             "Trondheim": {"Endring siste måned":0.5,"Endring sesongjustert siste måned":0.7,"Endring hittil i år":"6,1 %","Endring siste år":0.0,"Endring siste 5 år":19.7,"Endring siste 10 år":39.8,"Gjennomsnitt kvm. pris":"54 052","Gjennomsnittspris":"4 493 741"},
@@ -57,33 +130,29 @@
             "Norge": {"Endring siste måned":-0.2,"Endring sesongjustert siste måned":0.4,"Endring hittil i år":"8,0 %","Endring siste år":2.2,"Endring siste 5 år":25.1,"Endring siste 10 år":59.4,"Gjennomsnitt kvm. pris":"53 768","Gjennomsnittspris":"4 814 968"}
         };
 
-        const citySelect = document.getElementById('city-select');
-        const dataContainer = document.getElementById('data-container');
+        function updateData() {
+            const city = document.getElementById('city').value;
+            const cityData = data[city];
+            const dataDisplay = document.getElementById('data-display');
 
-        function displayData(city) {
-            dataContainer.innerHTML = ''; // Clear previous data
+            // Fade out the old data
+            dataDisplay.classList.remove('visible');
+            setTimeout(() => {
+                let html = '<table><tr><th>Metrisk</th><th>Verdi</th></tr>';
+                for (const key in cityData) {
+                    if (cityData.hasOwnProperty(key)) {
+                        html += `<tr><td>${key}</td><td>${cityData[key]}</td></tr>`;
+                    }
+                }
+                html += '</table>';
 
-            const data = dataSet[city];
-            const table = document.createElement('table');
-
-            for (const key in data) {
-                const row = table.insertRow();
-                const cell1 = row.insertCell(0);
-                const cell2 = row.insertCell(1);
-                cell1.textContent = key;
-                cell2.textContent = data[key];
-            }
-
-            dataContainer.appendChild(table);
+                dataDisplay.innerHTML = html;
+                
+                // Fade in the new data
+                dataDisplay.classList.add('visible');
+            }, 300); // Delay to match the fade-out duration
         }
-
-        // Initial display
-        displayData(citySelect.value);
-
-        // Update display on city selection change
-        citySelect.addEventListener('change', (event) => {
-            displayData(event.target.value);
-        });
+        updateData();
     </script>
 </body>
 </html>
